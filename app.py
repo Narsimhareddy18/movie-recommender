@@ -8,7 +8,7 @@ app = Flask(__name__)
 
 # 🆕 Function to fetch movie poster from TMDB API
 def fetch_poster(movie_title):
-    api_key = 'YOUR_API_KEY_HERE'  # Replace with your TMDB API Key
+    api_key = '85d1805f4cc488fccaeb8edf1371dff7'  # Replace with your TMDB API Key
     url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}"
     response = requests.get(url)
     data = response.json()
@@ -26,7 +26,17 @@ def recommend(movie_title):
         index = movies[movies['title'] == movie_title].index[0]
         distances = list(enumerate(similarity[index]))
         sorted_movies = sorted(distances, key=lambda x: x[1], reverse=True)[1:6]
-        return [movies.iloc[i[0]].title for i in sorted_movies]
+
+        recommended_titles = []
+        recommended_posters = []
+
+        for i in sorted_movies:
+            title = movies.iloc[i[0]].title
+            poster = fetch_poster(title)
+            recommended_titles.append(title)
+            recommended_posters.append(poster)
+
+        return list(zip(recommended_titles, recommended_posters))
     except IndexError:
         return []
 

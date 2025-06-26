@@ -1,8 +1,22 @@
 from flask import Flask, render_template, request
 import pickle
 import pandas as pd
+import requests  # 🆕 For TMDB API requests
+
 
 app = Flask(__name__)
+
+# 🆕 Function to fetch movie poster from TMDB API
+def fetch_poster(movie_title):
+    api_key = 'YOUR_API_KEY_HERE'  # Replace with your TMDB API Key
+    url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}"
+    response = requests.get(url)
+    data = response.json()
+    if data['results']:
+        poster_path = data['results'][0]['poster_path']
+        return f"https://image.tmdb.org/t/p/w500/{poster_path}"
+    return None
+
 
 movies = pd.read_csv('data/movies.csv')
 similarity = pickle.load(open('data/similarity.pkl', 'rb'))

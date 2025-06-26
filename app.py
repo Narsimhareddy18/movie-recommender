@@ -2,13 +2,14 @@ from flask import Flask, render_template, request
 import pickle
 import pandas as pd
 import requests  # 🆕 For TMDB API requests
+import os
 
 
 app = Flask(__name__)
 
 # 🆕 Function to fetch movie poster from TMDB API
 def fetch_poster(movie_title):
-    api_key = '85d1805f4cc488fccaeb8edf1371dff7'  # Replace with your TMDB API Key
+    api_key = os.getenv("TMDB_API_KEY") # Replace with your TMDB API Key
     url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}"
     response = requests.get(url)
     data = response.json()

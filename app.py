@@ -1,53 +1,67 @@
-from flask import Flask, render_template, request
-import pickle
 import pandas as pd
-import requests  # 🆕 For TMDB API requests
+from flask import Flask, request, render_template
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics.pairwise import linear_kernel
 import os
-
 
 app = Flask(__name__)
 
-# 🆕 Function to fetch movie poster from TMDB API
+# Load movie data
+movies = pd.read_csv('data/movies.csv')
+movies = movies[['title', 'overview']]
+movies['overview'] = movies['overview'].fillna('')
+
+# Vectorize text using TF-IDF
+tfidf = TfidfVectorizer(stop_words='english')
+tfidf_matrix = tfidf.fit_transform(movies['overview'])
+
+# Compute cosine similarity
+cosine_sim = linear_kernel(tfidf_matrix, tfidf_matrix)
+
+# Map titles to index
+indices = pd.Series(movies.index, index=movies['title'].str.lower())
+
+
+# Fetch poster from TMDB
+import requests
+
 def fetch_poster(movie_title):
-    api_key = os.getenv("TMDB_API_KEY") # Replace with your TMDB API Key
+    api_key = os.getenv("TMDB_API_KEY")  # securely using Render env variable
     url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}"
     response = requests.get(url)
     data = response.json()
-    if data['results']:
+    if 'results' in data and len(data['results']) > 0:
         poster_path = data['results'][0]['poster_path']
         return f"https://image.tmdb.org/t/p/w500/{poster_path}"
     return None
 
 
-movies = pd.read_csv('data/movies.csv')
-similarity = pickle.load(open('data/similarity.pkl', 'rb'))
+# Recommend function
+def recommend(title):
+    title = title.lower()
+    if title not in indices:
+        return [], []
 
-def recommend(movie_title):
-    try:
-        index = movies[movies['title'] == movie_title].index[0]
-        distances = list(enumerate(similarity[index]))
-        sorted_movies = sorted(distances, key=lambda x: x[1], reverse=True)[1:6]
+    idx = indices[title]
+    sim_scores = list(enumerate(cosine_sim[idx]))
+    sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:6]
+    movie_indices = [i[0] for i in sim_scores]
 
-        recommended_titles = []
-        recommended_posters = []
+    recommended_titles = movies['title'].iloc[movie_indices].tolist()
+    posters = [fetch_poster(movie) for movie in recommended_titles]
+    return recommended_titles, posters
 
-        for i in sorted_movies:
-            title = movies.iloc[i[0]].title
-            poster = fetch_poster(title)
-            recommended_titles.append(title)
-            recommended_posters.append(poster)
 
-        return list(zip(recommended_titles, recommended_posters))
-    except IndexError:
-        return []
-
+# Home route
 @app.route('/', methods=['GET', 'POST'])
 def home():
     recommendations = []
+    posters = []
     if request.method == 'POST':
-        movie_name = request.form['movie']
-        recommendations = recommend(movie_name)
-    return render_template('index.html', recommendations=recommendations)
+        movie = request.form.get('movie')
+        recommendations, posters = recommend(movie)
+    return render_template('index.html', recommendations=recommendations, posters=posters)
+
 
 if __name__ == '__main__':
     app.run(debug=True)

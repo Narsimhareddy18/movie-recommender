@@ -4,34 +4,44 @@
   <meta charset="UTF-8">
   <title>Movie Recommender</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f4f4f4;
+      padding-top: 50px;
+    }
+    .movie-card {
+      margin-bottom: 20px;
+    }
+    .poster-img {
+      height: 300px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+  </style>
 </head>
-<body class="bg-dark text-white">
+<body>
+  <div class="container text-center">
+    <h1 class="mb-4">🎬 Movie Recommendation System</h1>
+    
+    <form method="POST">
+      <div class="input-group mb-4">
+        <input type="text" class="form-control" name="movie" placeholder="Enter a movie title..." required autocomplete="off">
+        <button type="submit" class="btn btn-primary">Recommend</button>
+      </div>
+    </form>
 
-<div class="container mt-5">
-  <h1 class="mb-4 text-center">Movie Recommender</h1>
-  
-  <form method="POST">
-    <div class="input-group mb-4">
-      <input type="text" name="movie" class="form-control" placeholder="Enter a movie title" required autocomplete="off">
-      <button class="btn btn-primary">Get Recommendations</button>
-    </div>
-  </form>
-
-  {% if recommendations %}
     <div class="row">
-      {% for title, poster in recommendations %}
-        <div class="col-md-3 mb-4">
-          <div class="card h-100">
-            <img src="{{ poster }}" class="card-img-top" alt="{{ title }}">
-            <div class="card-body">
-              <h5 class="card-title text-dark">{{ title }}</h5>
-            </div>
+      {% for movie, poster in recommendations|zip(posters) %}
+      <div class="col-md-4 movie-card">
+        <div class="card shadow-sm">
+          <img src="{{ poster }}" class="card-img-top poster-img" alt="Movie Poster">
+          <div class="card-body">
+            <h5 class="card-title">{{ movie }}</h5>
           </div>
         </div>
+      </div>
       {% endfor %}
     </div>
-  {% endif %}
-</div>
-
+  </div>
 </body>
 </html>

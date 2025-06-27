@@ -31,12 +31,23 @@
     </form>
 
     <div class="row">
-    {% for title, poster in recommendations %}
+    <!-- {% for title, poster in recommendations %}
       <div class="card">
       <img src="{{ poster }}" alt="Poster" style="width: 10%;">
       <p style="text-align: center; font-weight: bold;">{{ title }}</p>
       </div>
+    {% endfor %} -->
+    {% for title, poster in recommendations %}
+      <!-- <div class="card">
+      <img src="{{ poster }}" alt="{{ title }}" style="width: 10%; border-radius: 5px;">
+      <p style="text-align: center; font-weight: 100; font-size: 15px; margin-top: 8px;">{{ title }}</p>
+      </div> -->
+      <div class="col-md-2 m-3">
+      <img src="{{ poster }}" class="img-fluid rounded" alt="{{ title }}">
+      <p class="mt-2">{{ title }}</p>
+      </div>
     {% endfor %}
+
     </div>
   </div>
 </body>

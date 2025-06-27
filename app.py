@@ -9,20 +9,23 @@ app = Flask(__name__)
 # Load data
 movies = pd.read_csv('data/movies.csv')
 movies.columns = movies.columns.str.strip()  # 🔧 Remove any extra spaces in headers
-movies = movies[['title', 'overview']]  # Use only necessary columns
+movies = movies[['title']]  # Use only necessary columns
 
 similarity = pickle.load(open('data/similarity.pkl', 'rb'))
 
+api_key = "85d1805f4cc488fccaeb8edf1371dff7"
+
 # TMDB Poster fetcher
-def fetch_poster(movie_title):
-    api_key = os.getenv("TMDB_API_KEY")  # 🔐 Securely read API Key
-    url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_title}"
-    response = requests.get(url)
+def fetch_poster(movie_name):
+    search_url = f"https://api.themoviedb.org/3/search/movie?api_key={api_key}&query={movie_name}"
+    response = requests.get(search_url)
     data = response.json()
-    if data['results']:
+
+    if 'results' in data and len(data['results']) > 0:
         poster_path = data['results'][0].get('poster_path')
-        return f"https://image.tmdb.org/t/p/w500/{poster_path}" if poster_path else None
-    return None
+        if poster_path:
+            return "https://image.tmdb.org/t/p/w500" + poster_path
+    return "https://via.placeholder.com/500x750?text=No+Poster"
 
 # Recommend function with posters
 def recommend(movie_title):
@@ -50,6 +53,8 @@ def home():
         movie_name = request.form['movie']
         recommendations = recommend(movie_name)
     return render_template('index.html', recommendations=recommendations)
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)

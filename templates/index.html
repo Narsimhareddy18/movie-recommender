@@ -31,16 +31,12 @@
     </form>
 
     <div class="row">
-      {% for movie, poster in recommendations|zip(posters) %}
-      <div class="col-md-4 movie-card">
-        <div class="card shadow-sm">
-          <img src="{{ poster }}" class="card-img-top poster-img" alt="Movie Poster">
-          <div class="card-body">
-            <h5 class="card-title">{{ movie }}</h5>
-          </div>
-        </div>
+    {% for title, poster in recommendations %}
+      <div class="card">
+      <img src="{{ poster }}" alt="Poster" style="width: 10%;">
+      <p style="text-align: center; font-weight: bold;">{{ title }}</p>
       </div>
-      {% endfor %}
+    {% endfor %}
     </div>
   </div>
 </body>
